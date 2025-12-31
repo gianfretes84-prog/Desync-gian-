@@ -1,0 +1,81 @@
+-- LocalScript dentro de StarterGui o StarterPlayerScripts
+
+local player = game.Players.LocalPlayer
+local runService = game:GetService("RunService")
+
+-- Crear la GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GianxzGoatMenu"
+screenGui.ResetOnSpawn = false 
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 200, 0, 100)
+mainFrame.Position = UDim2.new(0.5, -100, 0.4, -50)
+mainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+mainFrame.BorderSizePixel = 2
+mainFrame.Active = true
+mainFrame.Draggable = true 
+mainFrame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Text = "gianxzgoat"
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 18
+title.Parent = mainFrame
+
+local desyncButton = Instance.new("TextButton")
+desyncButton.Size = UDim2.new(0.8, 0, 0, 40)
+desyncButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+desyncButton.Text = "Desync"
+desyncButton.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+desyncButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+desyncButton.Font = Enum.Font.SourceSans
+desyncButton.TextSize = 20
+desyncButton.Parent = mainFrame
+
+-- Variables de estado
+local desyncActive = false
+
+-- Función de Desync
+desyncButton.MouseButton1Click:Connect(function()
+    desyncActive = not desyncActive
+    
+    if desyncActive then
+        desyncButton.BackgroundColor3 = Color3.fromRGB(150, 255, 150)
+        desyncButton.Text = "Desync: ON"
+        
+        -- REINICIO ÚNICO: Solo ocurre la primera vez que prendes el script en la sesión
+        if _G.FirstRunGianxz == nil then 
+            _G.FirstRunGianxz = true
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.Health = 0
+            end
+        end
+        
+        -- Ejecutar Desync usando la posición del personaje
+        task.spawn(function()
+            while desyncActive do
+                local char = player.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                
+                if hrp then
+                    -- Obtenemos la posición actual para el desync
+                    local currentPos = hrp.Position
+                    
+                    -- Aplicamos un pequeño desfase basado en tu posición real
+                    -- Esto altera la velocidad enviada al servidor sin moverte visualmente de forma brusca
+                    hrp.Velocity = Vector3.new(currentPos.X, currentPos.Y, currentPos.Z) * 0.0001
+                    hrp.CFrame = hrp.CFrame * CFrame.new(0, 0.01, 0) -- Micro-ajuste de posición
+                end
+                runService.Heartbeat:Wait()
+            end
+        end)
+    else
+        desyncButton.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+        desyncButton.Text = "Desync: OFF"
+    end
+end)
